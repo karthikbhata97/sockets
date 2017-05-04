@@ -26,43 +26,34 @@ typedef struct myclient {
 
 client_t *client_list[MAX_CLIENTS];
 
-void *recieve_data(void *args) {
+void *handle_clients(void *args) {
   client_t *pointer = (client_t *)args;
   char buf[MESSAGE_SIZE];
   char message[MESSAGE_SIZE];
+  char delim[2]=": ";
   int recvlen;
-  while(1) {
+  int i;
+
+  strncpy(buf, "Enter your name: ", 17);
+  send(pointer->client_fd, buf, strlen(buf), 0);
+  recvlen = recv(pointer->client_fd, buf, sizeof buf, 0);
+  strncpy(pointer->name, buf, recvlen);
+  pointer->name[recvlen-2]='\0';
+  while (1) {
     recvlen = recv(pointer->client_fd, buf, sizeof buf, 0);
     if(recvlen>0) {
-      strncpy(message, buf, recvlen);
-      message[recvlen]='\0';
+      memset(message, 0, sizeof message);
+      memcpy(message, pointer->name, strlen(pointer->name));
+      memcpy(message+strlen(pointer->name), delim, 2);
+      memcpy(message+strlen(message), buf, recvlen);
+      message[strlen(pointer->name) + recvlen]='\n';
       printf("%s\n", message);
+      for(i=0;i<total_clients;i++) {
+        if(client_list[i]->client_fd!=pointer->client_fd)
+          send(client_list[i]->client_fd, message, strlen(message), 0);
+      }
     }
   }
-  pthread_exit(NULL);
-}
-
-void *send_data(void *args) {
-  char buf[MESSAGE_SIZE];
-  int i;
-  client_t *pointer = (client_t *)args;
-  while (1) {
-    scanf("%s", buf);
-    for(i=0;i<total_clients;i++) {
-      if(client_list[i]->client_fd!=pointer->client_fd)
-        send(client_list[i]->client_fd, buf, strlen(buf), 0);
-    }
-  }
-  pthread_exit(NULL);
-}
-
-void *handle_clients(void *args) {
-  pthread_t recvt, sendt;
-  client_t *pointer = (client_t *)args;
-  pthread_create(&recvt, NULL, recieve_data, pointer);
-  pthread_create(&sendt, NULL, send_data, pointer);
-  pthread_join(sendt, NULL);
-  pthread_join(recvt, NULL);
   pthread_exit(NULL);
 }
 
