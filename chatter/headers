@@ -1,0 +1,8 @@
+stdio.h: That's obvious
+stdlib.h: '''''''''''''
+string.h: '''''''''''''
+unistd.h: fds..  close
+sys/socket.h: accept, bind listen etc
+netinet/in.h: sockaddr_in/6
+arpa/inet.h: ntoa, ntop pton, htonl
+netdb.h: addrinfo
