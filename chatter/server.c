@@ -38,15 +38,17 @@ void *handle_clients(void *args) {
   send(pointer->client_fd, buf, strlen(buf), 0);
   recvlen = recv(pointer->client_fd, buf, sizeof buf, 0);
   strncpy(pointer->name, buf, recvlen);
-  pointer->name[recvlen-2]='\0';
+  pointer->name[recvlen]='\0';
+  printf("New user: %s\n", pointer->name);
   while (1) {
     recvlen = recv(pointer->client_fd, buf, sizeof buf, 0);
+    printf("%s\n", buf);
     if(recvlen>0) {
       memset(message, 0, sizeof message);
       memcpy(message, pointer->name, strlen(pointer->name));
       memcpy(message+strlen(pointer->name), delim, 2);
       memcpy(message+strlen(message), buf, recvlen);
-      message[strlen(pointer->name) + recvlen]='\n';
+      message[strlen(pointer->name) + 1 +recvlen]='\0';
       printf("%s\n", message);
       for(i=0;i<total_clients;i++) {
         if(client_list[i]->client_fd!=pointer->client_fd)
@@ -91,7 +93,7 @@ int main(int argc, char const *argv[]) {
   socklen_t addrlen = sizeof temp;
   int aires, yes=1;
   int listener, new_client;
-  char message[20]="Helloworld";
+  char message[20]="Helloworld\n";
   char serverip[IP_SIZE];
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
